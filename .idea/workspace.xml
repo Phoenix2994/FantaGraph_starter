@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ecf3c3a5-1b08-4f5d-8b49-0fb86eb67f4e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/football_janusgraph.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/football_janusgraph.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/football/janusgraph/example/FootballExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/football/janusgraph/example/FootballExample.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/football/janusgraph/example/FootballExample.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/football/janusgraph/example/FootballExample.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/football_janusgraph-0.1.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/football_janusgraph-0.1.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -67,12 +61,23 @@
       <workItem from="1567606366014" duration="1286000" />
       <workItem from="1567677259818" duration="2653000" />
       <workItem from="1568068890188" duration="2241000" />
-      <workItem from="1568100825476" duration="12020000" />
+      <workItem from="1568100825476" duration="14350000" />
+      <workItem from="1568189552588" duration="1179000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">

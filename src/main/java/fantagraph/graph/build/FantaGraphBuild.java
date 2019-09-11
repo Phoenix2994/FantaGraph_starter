@@ -1,4 +1,4 @@
-package football.janusgraph.example;
+package fantagraph.graph.build;
 
 import org.janusgraph.core.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -14,8 +14,8 @@ import java.util.Map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
-public class FootballExample {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FootballExample.class);
+public class FantaGraphBuild {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FantaGraphBuild.class);
 
     /**
      * Creates the vertex labels.
@@ -64,29 +64,6 @@ public class FootballExample {
         management.commit();
     }
 
-    /*
-    static public void createVertex(GraphTraversalSource g) {
-        JSONParser parser = new JSONParser();
-        try {
-            Object obj = parser.parse(new FileReader("path"));
-            JSONObject jsonObject = (JSONObject) obj;
-            for (Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext(); ) {
-                String key = (String) iterator.next();
-                JSONObject player_info = (JSONObject) jsonObject.get(key);
-                String nome = (String) player_info.get("nome");
-                String squadra = (String) player_info.get("squadra");
-                String prosecutor = (String) player_info.get("prosecutor");
-                final Vertex player = g.addV("giocatore").property("nome", nome).next();
-                final Vertex prosec = g.addV("procuratore").property("nome", prosecutor).next();
-                g.V(player).as("a").V(squadra).addE("gioca_per").from("a").next();
-                g.V(player).as("a").V(prosec).addE("è_assistito_da").from("a").next();
-            }
-            g.tx().commit();
-        } catch (Exception e) {
-
-        }
-    }
-*/
     private static void createTeamVertex(GraphTraversalSource g) {
         JSONParser parser = new JSONParser();
         try {
