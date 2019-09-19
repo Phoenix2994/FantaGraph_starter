@@ -7,8 +7,9 @@ import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.janusgraph.core.schema.JanusGraphManagement;
+import java.io.*;
+import java.net.URL;
 
-import java.io.FileReader;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +68,8 @@ public class FantaGraphBuild {
     private static void createTeamVertex(GraphTraversalSource g) {
         JSONParser parser = new JSONParser();
         try {
-            Object obj = parser.parse(new FileReader("C:\\Student\\SWAM\\Project\\stats\\teams.txt"));
+            FantaGraphBuild main = new FantaGraphBuild();
+            Object obj = parser.parse(new FileReader(main.getFileFromResources("teams.txt")));
             JSONObject jsonObject = (JSONObject) obj;
             for (Object key : jsonObject.keySet()) {
                 String name = (String) key;
@@ -122,6 +124,19 @@ public class FantaGraphBuild {
         if (graph != null) {
             JanusGraphFactory.drop(graph);
         }
+    }
+
+    private File getFileFromResources(String fileName) {
+
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        URL resource = classLoader.getResource(fileName);
+        if (resource == null) {
+            throw new IllegalArgumentException("file is not found!");
+        } else {
+            return new File(resource.getFile());
+        }
+
     }
 
     public static void main(String[] args) throws Exception {
