@@ -141,15 +141,15 @@ public class FantaGraphBuild {
 
     public static void main(String[] args) throws Exception {
         //to create every time a new graph we drop the old one
-        JanusGraph graph_old = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
-        dropGraph(graph_old);
+        // JanusGraph graph_old = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
+        // dropGraph(graph_old);
 
         JanusGraph graph = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
         final JanusGraphManagement management = graph.openManagement();
-        createSchema(management);
+        // createSchema(management);
 
         GraphTraversalSource g = graph.traversal();
-        createTeamVertex(g);
+        // createTeamVertex(g);
 
         //search one president from team
         Map<Object, Object> presVertex = g.V().hasLabel("squadra").has("nome", "PARMA").in("possiede").valueMap().next();
