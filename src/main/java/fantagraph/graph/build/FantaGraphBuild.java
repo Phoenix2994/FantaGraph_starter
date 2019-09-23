@@ -49,19 +49,24 @@ public class FantaGraphBuild {
         management.makePropertyKey("nome").dataType(String.class).make();
         management.makePropertyKey("data_nascita").dataType(String.class).make();
         management.makePropertyKey("luogo_nascita").dataType(String.class).make();
-        management.makePropertyKey("media_eta").dataType(String.class).make();
-        management.makePropertyKey("rosa").dataType(String.class).make();
+        management.makePropertyKey("media_eta").dataType(Double.class).make();
+        management.makePropertyKey("rosa").dataType(Long.class).make();
         management.makePropertyKey("citta").dataType(String.class).make();
-        management.makePropertyKey("capienza").dataType(String.class).make();
+        management.makePropertyKey("capienza").dataType(Long.class).make();
         management.makePropertyKey("nazionalita").dataType(String.class).make();
         management.makePropertyKey("modulo").dataType(String.class).make();
+        management.makePropertyKey("altezza").dataType(String.class).make();
+        management.makePropertyKey("ruolo").dataType(String.class).make();
+        management.makePropertyKey("piede").dataType(String.class).make();
+        management.makePropertyKey("statistiche").dataType(String.class).make();
     }
 
-    private static void createSchema(final JanusGraphManagement management) {
+    private static void createSchema(final JanusGraphManagement management){
         LOGGER.info("creating schema");
         createProperties(management);
         createVertexLabels(management);
         createEdgeLabels(management);
+        buildCompositeIndex(management);
         management.commit();
     }
 
@@ -70,6 +75,7 @@ public class FantaGraphBuild {
         try {
             FantaGraphBuild main = new FantaGraphBuild();
             Object obj = parser.parse(new FileReader(main.getFileFromResources("teams.txt")));
+
             JSONObject jsonObject = (JSONObject) obj;
             for (Object key : jsonObject.keySet()) {
                 String name = (String) key;
@@ -139,6 +145,12 @@ public class FantaGraphBuild {
 
     }
 
+    private static void buildCompositeIndex(JanusGraphManagement mgmt){
+        PropertyKey citta = mgmt.getPropertyKey("citta");
+        JanusGraphManagement.IndexBuilder indexBuilder = mgmt.buildIndex("StadiumByCity", Vertex.class).addKey(citta);
+        indexBuilder.buildCompositeIndex();
+    }
+
     public static void main(String[] args) throws Exception {
         //to create every time a new graph we drop the old one
         JanusGraph graph_old = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
@@ -146,22 +158,23 @@ public class FantaGraphBuild {
 
         JanusGraph graph = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
         final JanusGraphManagement management = graph.openManagement();
+
         createSchema(management);
 
         GraphTraversalSource g = graph.traversal();
         createTeamVertex(g);
 
         //search one president from team
-        Map<Object, Object> presVertex = g.V().hasLabel("squadra").has("nome", "PARMA").in("possiede").valueMap().next();
+        //Map<Object, Object> presVertex = g.V().hasLabel("squadra").has("nome", "PARMA").in("possiede").valueMap().next();
         //search one team from president passing through coach
         Map<Object, Object> teamVertex = g.V().hasLabel("presidente").has("nome", "GIORGIO SQUINZI").out("ha_assunto").out("allena").valueMap().next();
         //check the ROMA stadium is shared
-        List<Map<Object, Object>> stadium_fans = g.V().hasLabel("squadra").has("nome", "ROMA").out("gioca_in").in("gioca_in").valueMap().toList();
-        Object teams = g.V().hasLabel("stadio").has("nome", "OLIMPICO").in("gioca_in").values("nome").toList();
+        //List<Map<Object, Object>> stadium_fans = g.V().hasLabel("squadra").has("nome", "ROMA").out("gioca_in").in("gioca_in").valueMap().toList();
+        Object teams = g.V().has("citta", "ROMA").in("gioca_in").values("nome").toList();
 
-        LOGGER.info(presVertex.toString());
+        //LOGGER.info(presVertex.toString());
         LOGGER.info(teamVertex.toString());
-        LOGGER.info(stadium_fans.toString());
+        //LOGGER.info(stadium_fans.toString());
         LOGGER.info(teams.toString());
         System.exit(0);
     }
