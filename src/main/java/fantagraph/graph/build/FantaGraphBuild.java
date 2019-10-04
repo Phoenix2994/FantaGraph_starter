@@ -7,10 +7,10 @@ import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.janusgraph.core.schema.JanusGraphManagement;
+
 import java.io.*;
 import java.net.URL;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -59,15 +59,60 @@ public class FantaGraphBuild {
         management.makePropertyKey("ruolo").dataType(String.class).make();
         management.makePropertyKey("piede").dataType(String.class).make();
         management.makePropertyKey("statistiche").dataType(String.class).make();
+        management.makePropertyKey("img").dataType(String.class).make();
+        management.makePropertyKey("id").dataType(String.class).make();
     }
 
-    private static void createSchema(final JanusGraphManagement management){
+    private static void createSchema(final JanusGraphManagement management) {
         LOGGER.info("creating schema");
         createProperties(management);
         createVertexLabels(management);
         createEdgeLabels(management);
         buildCompositeIndex(management);
         management.commit();
+    }
+
+    private static void createPlayerVertex(GraphTraversalSource g) {
+        JSONParser parser = new JSONParser();
+
+        try {
+            FantaGraphBuild main = new FantaGraphBuild();
+            Object obj = parser.parse(new FileReader(main.getFileFromResources("players.txt")));
+            JSONObject jsonObject = (JSONObject) obj;
+            for (Object key : jsonObject.keySet()) {
+                JSONObject player_info = (JSONObject) jsonObject.get(key);
+                String name = (String) player_info.get("nome");
+                String team_name = (String) player_info.get("squadra");
+                String player_place = (String) player_info.get("luogo di nascita");
+                String player_data = (String) player_info.get("data di nascita");
+                String player_nat = (String) player_info.get("nazionalita");
+                String player_height = (String) player_info.get("altezza");
+                String player_role = (String) player_info.get("ruolo");
+                String player_foot = (String) player_info.get("piede");
+                String player_img = (String) player_info.get("img");
+                String player_id = (String) player_info.get("id");
+                String player_stats = player_info.get("statistiche").toString();
+                String prosecutor_name = (String) player_info.get("procuratore");
+                final Vertex player = g.addV("giocatore").property("nome", name).property("nome", name).property("data_nascita", player_data).
+                        property("luogo_nascita", player_place).property("nazionalita", player_nat).property("altezza", player_height).
+                        property("ruolo", player_role).property("piede", player_foot).property("img", player_img).
+                        property("id", player_id).property("statistiche", player_stats).next();
+                Vertex team = g.V().hasLabel("squadra").has("nome", (team_name + " ").split(" ")[0].toUpperCase()).next();
+                g.V(player).as("a").V(team).addE("gioca_per").from("a").next();
+                boolean exist = g.V().hasLabel("procuratore").has("nome", prosecutor_name).hasNext();
+                final Vertex prosecutor;
+                if (!exist) {
+                    prosecutor = g.addV("procuratore").property("nome", prosecutor_name).next();
+                } else {
+                    prosecutor = g.V().hasLabel("procuratore").has("nome", prosecutor_name).next();
+                }
+                g.V(player).as("a").V(prosecutor).addE("è_assistito_da").from("a").next();
+                g.tx().commit();
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            g.tx().rollback();
+        }
     }
 
     private static void createTeamVertex(GraphTraversalSource g) {
@@ -145,7 +190,7 @@ public class FantaGraphBuild {
 
     }
 
-    private static void buildCompositeIndex(JanusGraphManagement mgmt){
+    private static void buildCompositeIndex(JanusGraphManagement mgmt) {
         PropertyKey citta = mgmt.getPropertyKey("citta");
         JanusGraphManagement.IndexBuilder indexBuilder = mgmt.buildIndex("StadiumByCity", Vertex.class).addKey(citta);
         indexBuilder.buildCompositeIndex();
@@ -163,19 +208,27 @@ public class FantaGraphBuild {
 
         GraphTraversalSource g = graph.traversal();
         createTeamVertex(g);
+        createPlayerVertex(g);
 
         //search one president from team
         //Map<Object, Object> presVertex = g.V().hasLabel("squadra").has("nome", "PARMA").in("possiede").valueMap().next();
         //search one team from president passing through coach
+        double queryAll = System.currentTimeMillis();
         Map<Object, Object> teamVertex = g.V().hasLabel("presidente").has("nome", "GIORGIO SQUINZI").out("ha_assunto").out("allena").valueMap().next();
+        double queryIndex = System.currentTimeMillis();
         //check the ROMA stadium is shared
         //List<Map<Object, Object>> stadium_fans = g.V().hasLabel("squadra").has("nome", "ROMA").out("gioca_in").in("gioca_in").valueMap().toList();
         Object teams = g.V().has("citta", "ROMA").in("gioca_in").values("nome").toList();
+        Object players = g.V().hasLabel("squadra").has("nome", "FIORENTINA").in("gioca_per").values("nome").toList();
+        double endTime = System.currentTimeMillis();
 
+        //LOGGER.info(String.valueOf(queryIndex - queryAll));
+        //LOGGER.info(String.valueOf(endTime - queryIndex));
         //LOGGER.info(presVertex.toString());
         LOGGER.info(teamVertex.toString());
         //LOGGER.info(stadium_fans.toString());
         LOGGER.info(teams.toString());
+        LOGGER.info(players.toString());
         System.exit(0);
     }
 }
