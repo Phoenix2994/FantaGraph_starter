@@ -71,6 +71,7 @@ public class FantaGraphBuild {
         management.makePropertyKey("img").dataType(String.class).make();
         management.makePropertyKey("id").dataType(String.class).make();
         management.makePropertyKey("paese").dataType(String.class).make();
+        management.makePropertyKey("logo").dataType(String.class).make();
     }
 
     private static void createSchema(final JanusGraphManagement management) {
@@ -137,16 +138,18 @@ public class FantaGraphBuild {
                 JSONObject team_info = (JSONObject) jsonObject.get(key);
                 Double avg_age = (Double) team_info.get("media eta");
                 Long team_members = (Long) team_info.get("rosa");
-                final Vertex team = g.addV("squadra").property("nome squadra", name).property("rosa", team_members).property("media eta", avg_age).next();
+                String logo = (String) team_info.get("logo");
+                final Vertex team = g.addV("squadra").property("nome squadra", name).property("rosa", team_members).property("media eta", avg_age).property("logo", logo).next();
                 //team vertex added to graph
                 JSONObject stadium_info = (JSONObject) team_info.get("stadio");
                 String stadium_name = (String) stadium_info.get("nome");
                 String stadium_place = (String) stadium_info.get("citta");
                 Long stadium_fans = (Long) stadium_info.get("capienza");
+                String stadium_img = (String) stadium_info.get("img");
                 boolean stadium_exist = g.V().hasLabel("stadio").has("nome stadio", stadium_name).hasNext();
                 final Vertex stadium;
                 if (!stadium_exist) {
-                    stadium = g.addV("stadio").property("nome stadio", stadium_name).property("citta", stadium_place).property("capienza", stadium_fans).next();
+                    stadium = g.addV("stadio").property("nome stadio", stadium_name).property("citta", stadium_place).property("capienza", stadium_fans).property("img", stadium_img).next();
                 } else {
                     stadium = g.V().hasLabel("stadio").has("nome stadio", stadium_name).next();
                 }
