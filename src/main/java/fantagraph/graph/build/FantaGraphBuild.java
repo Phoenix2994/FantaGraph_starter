@@ -72,6 +72,7 @@ public class FantaGraphBuild {
         management.makePropertyKey("id").dataType(String.class).make();
         management.makePropertyKey("paese").dataType(String.class).make();
         management.makePropertyKey("logo").dataType(String.class).make();
+        management.makePropertyKey("quot").dataType(Long.class).make();
     }
 
     private static void createSchema(final JanusGraphManagement management) {
@@ -102,12 +103,13 @@ public class FantaGraphBuild {
                 String player_foot = (String) player_info.get("piede");
                 String player_img = (String) player_info.get("img");
                 String player_id = (String) player_info.get("id");
+                Long player_quot = (Long) player_info.get("quot");
                 String player_stats = player_info.get("statistiche").toString();
                 String prosecutor_name = (String) player_info.get("procuratore");
                 final Vertex player = g.addV("giocatore").property("nome giocatore", name).property("data nascita", player_data).
                         property("luogo nascita", player_place).property("nazionalita", player_nat).property("altezza", player_height).
                         property("ruolo", player_role).property("piede", player_foot).property("img", player_img).
-                        property("id", player_id).property("statistiche", player_stats).next();
+                        property("id", player_id).property("statistiche", player_stats).property("quot", player_quot).next();
                 Vertex team = g.V().hasLabel("squadra").has("nome squadra", (team_name + " ").split(" ")[0].toUpperCase()).next();
                 g.V(player).as("a").V(team).addE("gioca per").from("a").next();
                 boolean exist = g.V().hasLabel("procuratore").has("nome procuratore", prosecutor_name).hasNext();
