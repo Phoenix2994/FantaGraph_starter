@@ -49,17 +49,8 @@ public class FantaGraphBuild {
      */
     private static void createProperties(final JanusGraphManagement management) {
         management.makePropertyKey("nome").dataType(String.class).make();
-        management.makePropertyKey("nome squadra").dataType(String.class).make();
-        management.makePropertyKey("nome giocatore").dataType(String.class).make();
-        management.makePropertyKey("nome presidente").dataType(String.class).make();
-        management.makePropertyKey("nome allenatore").dataType(String.class).make();
-        management.makePropertyKey("nome stadio").dataType(String.class).make();
-        management.makePropertyKey("nome procuratore").dataType(String.class).make();
-        management.makePropertyKey("nome campionato").dataType(String.class).make();
         management.makePropertyKey("data nascita").dataType(String.class).make();
         management.makePropertyKey("luogo nascita").dataType(String.class).make();
-        management.makePropertyKey("media eta").dataType(Double.class).make();
-        management.makePropertyKey("rosa").dataType(Long.class).make();
         management.makePropertyKey("citta").dataType(String.class).make();
         management.makePropertyKey("capienza").dataType(Long.class).make();
         management.makePropertyKey("nazionalita").dataType(String.class).make();
@@ -69,7 +60,12 @@ public class FantaGraphBuild {
         management.makePropertyKey("piede").dataType(String.class).make();
         management.makePropertyKey("statistiche").dataType(String.class).make();
         management.makePropertyKey("img").dataType(String.class).make();
-        management.makePropertyKey("id").dataType(String.class).make();
+        management.makePropertyKey("id giocatore").dataType(Long.class).make();
+        management.makePropertyKey("id allenatore").dataType(Long.class).make();
+        management.makePropertyKey("id presidente").dataType(Long.class).make();
+        management.makePropertyKey("id stadio").dataType(Long.class).make();
+        management.makePropertyKey("id squadra").dataType(Long.class).make();
+        management.makePropertyKey("id procuratore").dataType(Long.class).make();
         management.makePropertyKey("paese").dataType(String.class).make();
         management.makePropertyKey("logo").dataType(String.class).make();
         management.makePropertyKey("quot").dataType(Long.class).make();
@@ -86,8 +82,8 @@ public class FantaGraphBuild {
 
     private static void createPlayersVertices(GraphTraversalSource g) {
         JSONParser parser = new JSONParser();
-
         try {
+            long prosecutor_counter = 0;
             FantaGraphBuild main = new FantaGraphBuild();
             Object obj = parser.parse(new FileReader(main.getFileFromResources("players.txt")));
             JSONObject jsonObject = (JSONObject) obj;
@@ -102,22 +98,27 @@ public class FantaGraphBuild {
                 String player_role = (String) player_info.get("ruolo");
                 String player_foot = (String) player_info.get("piede");
                 String player_img = (String) player_info.get("img");
-                String player_id = (String) player_info.get("id");
+                long player_id = Long.parseLong((String) player_info.get("id"));
                 Long player_quot = (Long) player_info.get("quot");
                 String player_stats = player_info.get("statistiche").toString();
                 String prosecutor_name = (String) player_info.get("procuratore");
-                final Vertex player = g.addV("giocatore").property("nome giocatore", name).property("data nascita", player_data).
-                        property("luogo nascita", player_place).property("nazionalita", player_nat).property("altezza", player_height).
-                        property("ruolo", player_role).property("piede", player_foot).property("img", player_img).
-                        property("id", player_id).property("statistiche", player_stats).property("quot", player_quot).next();
-                Vertex team = g.V().hasLabel("squadra").has("nome squadra", (team_name + " ").split(" ")[0].toUpperCase()).next();
+                final Vertex player = g.addV("giocatore").property("nome", name)
+                        .property("data nascita", player_data).property("luogo nascita", player_place)
+                        .property("nazionalita", player_nat).property("altezza", player_height)
+                        .property("ruolo", player_role).property("piede", player_foot)
+                        .property("img", player_img).property("id giocatore", player_id)
+                        .property("statistiche", player_stats).property("quot", player_quot).next();
+                Vertex team = g.V().hasLabel("squadra").has("nome", (team_name + " ")
+                        .split(" ")[0].toUpperCase()).next();
                 g.V(player).as("a").V(team).addE("gioca per").from("a").next();
-                boolean exist = g.V().hasLabel("procuratore").has("nome procuratore", prosecutor_name).hasNext();
+                boolean exist = g.V().hasLabel("procuratore").has("nome", prosecutor_name).hasNext();
                 final Vertex prosecutor;
                 if (!exist) {
-                    prosecutor = g.addV("procuratore").property("nome procuratore", prosecutor_name).next();
+                    prosecutor_counter = prosecutor_counter + 1;
+                    prosecutor = g.addV("procuratore").property("nome", prosecutor_name)
+                            .property("id procuratore", prosecutor_counter).next();
                 } else {
-                    prosecutor = g.V().hasLabel("procuratore").has("nome procuratore", prosecutor_name).next();
+                    prosecutor = g.V().hasLabel("procuratore").has("nome", prosecutor_name).next();
                 }
                 g.V(player).as("a").V(prosecutor).addE("è assistito da").from("a").next();
                 g.tx().commit();
@@ -133,34 +134,42 @@ public class FantaGraphBuild {
         try {
             FantaGraphBuild main = new FantaGraphBuild();
             Object obj = parser.parse(new FileReader(main.getFileFromResources("teams.txt")));
-
+            long team_counter = 0;
+            long president_counter = 0;
+            long coach_counter = 0;
+            long stadium_counter = 0;
             JSONObject jsonObject = (JSONObject) obj;
             for (Object key : jsonObject.keySet()) {
                 String name = (String) key;
                 JSONObject team_info = (JSONObject) jsonObject.get(key);
-                Double avg_age = (Double) team_info.get("media eta");
-                Long team_members = (Long) team_info.get("rosa");
                 String logo = (String) team_info.get("logo");
-                final Vertex team = g.addV("squadra").property("nome squadra", name).property("rosa", team_members).property("media eta", avg_age).property("logo", logo).next();
+                team_counter = team_counter + 1;
+                final Vertex team = g.addV("squadra").property("nome", name).property("logo", logo)
+                        .property("id squadra", team_counter).next();
                 //team vertex added to graph
                 JSONObject stadium_info = (JSONObject) team_info.get("stadio");
                 String stadium_name = (String) stadium_info.get("nome");
                 String stadium_place = (String) stadium_info.get("citta");
                 Long stadium_fans = (Long) stadium_info.get("capienza");
                 String stadium_img = (String) stadium_info.get("img");
-                boolean stadium_exist = g.V().hasLabel("stadio").has("nome stadio", stadium_name).hasNext();
+                boolean stadium_exist = g.V().hasLabel("stadio").has("nome", stadium_name).hasNext();
                 final Vertex stadium;
                 if (!stadium_exist) {
-                    stadium = g.addV("stadio").property("nome stadio", stadium_name).property("citta", stadium_place).property("capienza", stadium_fans).property("img", stadium_img).next();
+                    stadium_counter = stadium_counter + 1;
+                    stadium = g.addV("stadio").property("nome", stadium_name)
+                            .property("citta", stadium_place).property("capienza", stadium_fans)
+                            .property("img", stadium_img).property("id stadio", stadium_counter).next();
                 } else {
-                    stadium = g.V().hasLabel("stadio").has("nome stadio", stadium_name).next();
+                    stadium = g.V().hasLabel("stadio").has("nome", stadium_name).next();
                 }
-                boolean league_exist = g.V().hasLabel("campionato").has("nome campionato", "Serie A TIM").hasNext();
+                boolean league_exist = g.V().hasLabel("campionato")
+                        .has("nome", "Serie A TIM").hasNext();
                 final Vertex league;
                 if (!league_exist) {
-                    league = g.addV("campionato").property("nome campionato", "Serie A TIM").property("paese", "ITALIA").next();
+                    league = g.addV("campionato").property("nome", "Serie A TIM")
+                            .property("paese", "ITALIA").next();
                 } else {
-                    league = g.V().hasLabel("campionato").has("nome campionato", "Serie A TIM").next();
+                    league = g.V().hasLabel("campionato").has("nome", "Serie A TIM").next();
                 }
                 //stadium vertex added to graph
                 JSONObject president_info = (JSONObject) team_info.get("presidente");
@@ -168,7 +177,10 @@ public class FantaGraphBuild {
                 String pres_place = (String) president_info.get("luogo nascita");
                 String pres_data = (String) president_info.get("data nascita");
                 String pres_nat = (String) president_info.get("nazionalita");
-                final Vertex president = g.addV("presidente").property("nome presidente", pres_name).property("data nascita", pres_data).property("luogo nascita", pres_place).property("nazionalita", pres_nat).next();
+                president_counter = president_counter + 1;
+                final Vertex president = g.addV("presidente").property("nome", pres_name)
+                        .property("data nascita", pres_data).property("luogo nascita", pres_place)
+                        .property("nazionalita", pres_nat).property("id presidente", president_counter).next();
                 //president vertex added to graph
                 JSONObject coach_info = (JSONObject) team_info.get("allenatore");
                 String coach_name = (String) coach_info.get("nome");
@@ -176,7 +188,11 @@ public class FantaGraphBuild {
                 String coach_data = (String) coach_info.get("data nascita");
                 String coach_nat = (String) coach_info.get("nazionalita");
                 Long coach_schema = (Long) coach_info.get("modulo");
-                final Vertex coach = g.addV("allenatore").property("nome allenatore", coach_name).property("data nascita", coach_data).property("luogo nascita", coach_place).property("nazionalita", coach_nat).property("modulo", coach_schema).next();
+                coach_counter = coach_counter + 1;
+                final Vertex coach = g.addV("allenatore").property("nome", coach_name)
+                        .property("data nascita", coach_data).property("luogo nascita", coach_place)
+                        .property("nazionalita", coach_nat).property("modulo", coach_schema)
+                        .property("id allenatore", coach_counter).next();
                 //coach vertex added to graph
                 g.V(team).as("a").V(stadium).addE("gioca in").from("a").next();
                 g.V(team).as("a").V(league).addE("partecipa a").from("a").next();
@@ -214,23 +230,24 @@ public class FantaGraphBuild {
     }
 
     private static void buildCompositeIndex(JanusGraphManagement mgmt) {
-        PropertyKey stadium_name = mgmt.getPropertyKey("nome stadio");
-        JanusGraphManagement.IndexBuilder indexBuilder = mgmt.buildIndex("StadiumByName", Vertex.class).addKey(stadium_name);
+        PropertyKey stadium_id = mgmt.getPropertyKey("id stadio");
+        JanusGraphManagement.IndexBuilder indexBuilder = mgmt.buildIndex("StadiumById", Vertex.class)
+                .addKey(stadium_id);
         indexBuilder.buildCompositeIndex();
-        PropertyKey team_name = mgmt.getPropertyKey("nome squadra");
-        indexBuilder = mgmt.buildIndex("TeamByName", Vertex.class).addKey(team_name);
+        PropertyKey team_id = mgmt.getPropertyKey("id squadra");
+        indexBuilder = mgmt.buildIndex("TeamById", Vertex.class).addKey(team_id);
         indexBuilder.buildCompositeIndex();
-        PropertyKey player_id = mgmt.getPropertyKey("id");
+        PropertyKey player_id = mgmt.getPropertyKey("id giocatore");
         indexBuilder = mgmt.buildIndex("PlayerById", Vertex.class).addKey(player_id);
         indexBuilder.buildCompositeIndex();
-        PropertyKey coach_name = mgmt.getPropertyKey("nome allenatore");
-        indexBuilder = mgmt.buildIndex("CoachByName", Vertex.class).addKey(coach_name);
+        PropertyKey coach_id = mgmt.getPropertyKey("id allenatore");
+        indexBuilder = mgmt.buildIndex("CoachById", Vertex.class).addKey(coach_id);
         indexBuilder.buildCompositeIndex();
-        PropertyKey president_name = mgmt.getPropertyKey("nome presidente");
-        indexBuilder = mgmt.buildIndex("PresidentByName", Vertex.class).addKey(president_name);
+        PropertyKey president_id = mgmt.getPropertyKey("id presidente");
+        indexBuilder = mgmt.buildIndex("PresidentById", Vertex.class).addKey(president_id);
         indexBuilder.buildCompositeIndex();
-        PropertyKey prosecutor_name = mgmt.getPropertyKey("nome procuratore");
-        indexBuilder = mgmt.buildIndex("ProsecutorByName", Vertex.class).addKey(prosecutor_name);
+        PropertyKey prosecutor_id = mgmt.getPropertyKey("id procuratore");
+        indexBuilder = mgmt.buildIndex("ProsecutorById", Vertex.class).addKey(prosecutor_id);
         indexBuilder.buildCompositeIndex();
 
     }
@@ -250,9 +267,15 @@ public class FantaGraphBuild {
         createPlayersVertices(g);
 
         //test if everything is ok
-        Object vertex = g.V().has("id", "2002").out("gioca per").in("possiede")
-                .in("è incaricato da").out("allena").out("gioca in").values("nome stadio").next();
+        Object vertex = g.V().has("id giocatore", 2002).out("gioca per").in("possiede")
+                .in("è incaricato da").out("allena").out("gioca in").values("nome").next();
 
+        double queryStart = System.currentTimeMillis();
+        Object players = g.V().has("id giocatore").values("nome").toList();
+        double queryEnd = System.currentTimeMillis();
+
+        LOGGER.info(players.toString());
+        LOGGER.info(String.valueOf(queryEnd - queryStart));
         LOGGER.info("TEST: LO STADIO DOVREBBE ESSERE ARTEMIO FRANCHI E RISULTA " + vertex);
         System.exit(0);
     }
