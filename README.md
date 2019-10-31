@@ -15,5 +15,5 @@ Java Project using JanusGraph 0.4.0 and Apache TinkerPop 3.4.1.
 
 ```
 mvn clean package
-mvn exec:java -Dexec.mainClass="fantagraph.graph.build.FantaGraphBuild"
+mvn exec:java -Dexec.mainClass="fantagraph.graph.build.Main"
 ```
