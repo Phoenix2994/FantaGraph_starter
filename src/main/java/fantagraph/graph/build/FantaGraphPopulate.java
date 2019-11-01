@@ -23,35 +23,35 @@ public class FantaGraphPopulate {
             JSONObject jsonObject = (JSONObject) obj;
             for (Object key : jsonObject.keySet()) {
                 JSONObject player_info = (JSONObject) jsonObject.get(key);
-                String name = (String) player_info.get("nome");
-                String team_name = (String) player_info.get("squadra");
-                String player_place = (String) player_info.get("luogo di nascita");
-                String player_data = (String) player_info.get("data di nascita");
-                String player_nat = (String) player_info.get("nazionalita");
-                String player_height = (String) player_info.get("altezza");
-                String player_role = (String) player_info.get("ruolo");
-                String player_foot = (String) player_info.get("piede");
+                String name = (String) player_info.get("name");
+                String team_name = (String) player_info.get("team");
+                String player_place = (String) player_info.get("birthplace");
+                String player_data = (String) player_info.get("birthdate");
+                String player_nat = (String) player_info.get("nationality");
+                String player_height = (String) player_info.get("height");
+                String player_role = (String) player_info.get("role");
+                String player_foot = (String) player_info.get("mainFoot");
                 String player_img = (String) player_info.get("img");
                 long player_id = Long.parseLong((String) player_info.get("id"));
                 Long player_quot = (Long) player_info.get("quot");
-                JSONObject player_stats = (JSONObject) player_info.get("statistiche");
-                String prosecutor_name = (String) player_info.get("procuratore");
-                final Vertex player = g.addV("giocatore").property("nome", name)
-                        .property("data nascita", player_data).property("luogo nascita", player_place)
-                        .property("nazionalita", player_nat).property("altezza", player_height)
-                        .property("ruolo", player_role).property("piede", player_foot)
-                        .property("img", player_img).property("id giocatore", player_id)
+                JSONObject player_stats = (JSONObject) player_info.get("stats");
+                String prosecutor_name = (String) player_info.get("prosecutor");
+                final Vertex player = g.addV("player").property("name", name)
+                        .property("birthdate", player_data).property("birthplace", player_place)
+                        .property("nationality", player_nat).property("height", player_height)
+                        .property("role", player_role).property("mainFoot", player_foot)
+                        .property("img", player_img).property("player id", player_id)
                         .property("quot", player_quot).next();
-                Vertex team = g.V().hasLabel("squadra").has("nome", (team_name + " ")
+                Vertex team = g.V().hasLabel("team").has("name", (team_name + " ")
                         .split(" ")[0].toUpperCase()).next();
-                g.V(player).as("a").V(team).addE("gioca per").from("a").next();
-                boolean exist = g.V().hasLabel("procuratore").has("nome", prosecutor_name).hasNext();
+                g.V(player).as("a").V(team).addE("plays for").from("a").next();
+                boolean exist = g.V().hasLabel("prosecutor").has("name", prosecutor_name).hasNext();
                 for (Object season_key : player_stats.keySet()) {
                     JSONObject season_stats = (JSONObject) player_stats.get(season_key);
-                    if (season_stats.containsKey("squadra")) {
+                    if (season_stats.containsKey("team")) {
                         String season_year = season_key.toString().replace("stagione", "");
                         String role = (String) season_stats.get("r");
-                        String playing_team = (String) season_stats.get("squadra");
+                        String playing_team = (String) season_stats.get("team");
                         Long played_matches = (Long) season_stats.get("pg");
                         Double avg_rating = ((Number) season_stats.get("mv")).doubleValue();
                         Double avg_fantarating = ((Number) season_stats.get("mf")).doubleValue();
@@ -63,50 +63,50 @@ public class FantaGraphPopulate {
                         Long yellow_cards = (Long) season_stats.get("amm");
                         Long red_cards = (Long) season_stats.get("esp");
                         Long own_goals = (Long) season_stats.get("aut");
-                        if (g.V().hasLabel("squadra").has("nome", playing_team.toUpperCase())
+                        if (g.V().hasLabel("team").has("name", playing_team.toUpperCase())
                                 .hasNext()) {
-                            Vertex season_team = g.V().hasLabel("squadra").has("nome",
+                            Vertex season_team = g.V().hasLabel("team").has("name",
                                     playing_team.toUpperCase()).next();
-                            final Vertex player_season_stats = g.addV("statistiche stagione")
-                                    .property("anno", season_year)
-                                    .property("ruolo", role).property("partite giocate", played_matches)
-                                    .property("media voto", avg_rating)
-                                    .property("media fantavoto", avg_fantarating)
-                                    .property("media voto gauss", avg_gaussian_rating)
-                                    .property("media fantavoto gauss", avg_gaussian_fantarating)
-                                    .property("gol fatti", scored_goals)
-                                    .property("gol subiti", conceded_goals)
-                                    .property("assist", assists).property("ammonizioni", yellow_cards)
-                                    .property("espulsioni", red_cards).property("autogol", own_goals).next();
-                            g.V(player).as("a").V(player_season_stats).addE("statistiche").from("a").next();
-                            g.V(player_season_stats).as("a").V(season_team).addE("statistiche").from("a")
+                            final Vertex player_season_stats = g.addV("season stats")
+                                    .property("year", season_year)
+                                    .property("role", role).property("played matches", played_matches)
+                                    .property("average", avg_rating)
+                                    .property("fanta average", avg_fantarating)
+                                    .property("gauss average", avg_gaussian_rating)
+                                    .property("gauss fanta average", avg_gaussian_fantarating)
+                                    .property("scored goals", scored_goals)
+                                    .property("conceded goals", conceded_goals)
+                                    .property("assists", assists).property("yellow cards", yellow_cards)
+                                    .property("red cards", red_cards).property("own goals", own_goals).next();
+                            g.V(player).as("a").V(player_season_stats).addE("stats").from("a").next();
+                            g.V(player_season_stats).as("a").V(season_team).addE("stats").from("a")
                                     .next();
                         } else {
-                            final Vertex player_season_stats = g.addV("statistiche stagione")
-                                    .property("anno", season_year)
-                                    .property("ruolo", role).property("partite giocate", played_matches)
-                                    .property("media voto", avg_rating)
-                                    .property("media fantavoto", avg_fantarating)
-                                    .property("media voto gauss", avg_gaussian_rating)
-                                    .property("media fantavoto gauss", avg_gaussian_fantarating)
-                                    .property("gol fatti", scored_goals)
-                                    .property("gol subiti", conceded_goals)
-                                    .property("assist", assists).property("ammonizioni", yellow_cards)
-                                    .property("espulsioni", red_cards).property("autogol", own_goals)
-                                    .property("squadra", playing_team.toUpperCase()).next();
-                            g.V(player).as("a").V(player_season_stats).addE("statistiche").from("a").next();
+                            final Vertex player_season_stats = g.addV("season stats")
+                                    .property("year", season_year)
+                                    .property("role", role).property("played matches", played_matches)
+                                    .property("average", avg_rating)
+                                    .property("fanta average", avg_fantarating)
+                                    .property("gauss average", avg_gaussian_rating)
+                                    .property("gauss fanta average", avg_gaussian_fantarating)
+                                    .property("scored goals", scored_goals)
+                                    .property("conceded goals", conceded_goals)
+                                    .property("assists", assists).property("yellow cards", yellow_cards)
+                                    .property("red cards", red_cards).property("own goals", own_goals)
+                                    .property("team", playing_team.toUpperCase()).next();
+                            g.V(player).as("a").V(player_season_stats).addE("stats").from("a").next();
                         }
                     }
                 }
                 final Vertex prosecutor;
                 if (!exist) {
                     prosecutor_counter = prosecutor_counter + 1;
-                    prosecutor = g.addV("procuratore").property("nome", prosecutor_name)
-                            .property("id procuratore", prosecutor_counter).next();
+                    prosecutor = g.addV("prosecutor").property("name", prosecutor_name)
+                            .property("prosecutor id", prosecutor_counter).next();
                 } else {
-                    prosecutor = g.V().hasLabel("procuratore").has("nome", prosecutor_name).next();
+                    prosecutor = g.V().hasLabel("prosecutor").has("name", prosecutor_name).next();
                 }
-                g.V(player).as("a").V(prosecutor).addE("è assistito da").from("a").next();
+                g.V(player).as("a").V(prosecutor).addE("is assisted by").from("a").next();
                 g.tx().commit();
             }
         } catch (Exception e) {
@@ -130,64 +130,64 @@ public class FantaGraphPopulate {
                 JSONObject team_info = (JSONObject) jsonObject.get(key);
                 String logo = (String) team_info.get("logo");
                 team_counter = team_counter + 1;
-                final Vertex team = g.addV("squadra").property("nome", name)
+                final Vertex team = g.addV("team").property("name", name)
                         .property("logo", logo)
-                        .property("id squadra", team_counter).next();
+                        .property("team id", team_counter).next();
                 //team vertex added to graph
-                JSONObject stadium_info = (JSONObject) team_info.get("stadio");
-                String stadium_name = (String) stadium_info.get("nome");
-                String stadium_place = (String) stadium_info.get("citta");
-                Long stadium_fans = (Long) stadium_info.get("capienza");
+                JSONObject stadium_info = (JSONObject) team_info.get("stadium");
+                String stadium_name = (String) stadium_info.get("name");
+                String stadium_place = (String) stadium_info.get("city");
+                Long stadium_fans = (Long) stadium_info.get("capacity");
                 String stadium_img = (String) stadium_info.get("img");
-                boolean stadium_exist = g.V().hasLabel("stadio").has("nome", stadium_name).hasNext();
+                boolean stadium_exist = g.V().hasLabel("stadium").has("name", stadium_name).hasNext();
                 final Vertex stadium;
                 if (!stadium_exist) {
                     stadium_counter = stadium_counter + 1;
-                    stadium = g.addV("stadio").property("nome", stadium_name)
-                            .property("citta", stadium_place).property("capienza", stadium_fans)
-                            .property("img", stadium_img).property("id stadio", stadium_counter).next();
+                    stadium = g.addV("stadium").property("name", stadium_name)
+                            .property("city", stadium_place).property("capacity", stadium_fans)
+                            .property("img", stadium_img).property("stadium id", stadium_counter).next();
                 } else {
-                    stadium = g.V().hasLabel("stadio").has("nome", stadium_name).next();
+                    stadium = g.V().hasLabel("stadium").has("name", stadium_name).next();
                 }
-                boolean league_exist = g.V().hasLabel("campionato")
-                        .has("nome", "Serie A TIM").hasNext();
+                boolean league_exist = g.V().hasLabel("league")
+                        .has("name", "Serie A TIM").hasNext();
                 final Vertex league;
                 if (!league_exist) {
-                    league = g.addV("campionato").property("nome", "Serie A TIM")
-                            .property("paese", "ITALIA").next();
+                    league = g.addV("league").property("name", "Serie A TIM")
+                            .property("country", "ITALIA").next();
                 } else {
-                    league = g.V().hasLabel("campionato").has("nome", "Serie A TIM").next();
+                    league = g.V().hasLabel("league").has("name", "Serie A TIM").next();
                 }
                 //stadium vertex added to graph
-                JSONObject president_info = (JSONObject) team_info.get("presidente");
-                String pres_name = (String) president_info.get("nome");
-                String pres_place = (String) president_info.get("luogo nascita");
-                String pres_data = (String) president_info.get("data nascita");
-                String pres_nat = (String) president_info.get("nazionalita");
+                JSONObject president_info = (JSONObject) team_info.get("president");
+                String pres_name = (String) president_info.get("name");
+                String pres_place = (String) president_info.get("birthplace");
+                String pres_data = (String) president_info.get("birthdate");
+                String pres_nat = (String) president_info.get("nationality");
                 president_counter = president_counter + 1;
-                final Vertex president = g.addV("presidente").property("nome", pres_name)
-                        .property("data nascita", pres_data.split(" ")[0])
-                        .property("luogo nascita", pres_place)
-                        .property("nazionalita", pres_nat).property("id presidente", president_counter).next();
+                final Vertex president = g.addV("president").property("name", pres_name)
+                        .property("birthdate", pres_data.split(" ")[0])
+                        .property("birthplace", pres_place)
+                        .property("nationality", pres_nat).property("president id", president_counter).next();
                 //president vertex added to graph
-                JSONObject coach_info = (JSONObject) team_info.get("allenatore");
-                String coach_name = (String) coach_info.get("nome");
-                String coach_place = (String) coach_info.get("luogo nascita");
-                String coach_data = (String) coach_info.get("data nascita");
-                String coach_nat = (String) coach_info.get("nazionalita");
-                Long coach_schema = (Long) coach_info.get("modulo");
+                JSONObject coach_info = (JSONObject) team_info.get("coach");
+                String coach_name = (String) coach_info.get("name");
+                String coach_place = (String) coach_info.get("birthplace");
+                String coach_data = (String) coach_info.get("birthdate");
+                String coach_nat = (String) coach_info.get("nationality");
+                Long coach_schema = (Long) coach_info.get("module");
                 coach_counter = coach_counter + 1;
-                final Vertex coach = g.addV("allenatore").property("nome", coach_name)
-                        .property("data nascita", coach_data.split(" ")[0])
-                        .property("luogo nascita", coach_place)
-                        .property("nazionalita", coach_nat).property("modulo", coach_schema)
-                        .property("id allenatore", coach_counter).next();
+                final Vertex coach = g.addV("coach").property("name", coach_name)
+                        .property("birthdate", coach_data.split(" ")[0])
+                        .property("birthplace", coach_place)
+                        .property("nationality", coach_nat).property("module", coach_schema)
+                        .property("coach id", coach_counter).next();
                 //coach vertex added to graph
-                g.V(team).as("a").V(stadium).addE("gioca in").from("a").next();
-                g.V(team).as("a").V(league).addE("partecipa a").from("a").next();
-                g.V(coach).as("a").V(team).addE("allena").from("a").next();
-                g.V(coach).as("a").V(president).addE("è incaricato da").from("a").next();
-                g.V(president).as("a").V(team).addE("possiede").from("a").next();
+                g.V(team).as("a").V(stadium).addE("plays in").from("a").next();
+                g.V(team).as("a").V(league).addE("participates").from("a").next();
+                g.V(coach).as("a").V(team).addE("trains").from("a").next();
+                g.V(coach).as("a").V(president).addE("is commissioned by").from("a").next();
+                g.V(president).as("a").V(team).addE("owns").from("a").next();
 
                 g.tx().commit();
             }

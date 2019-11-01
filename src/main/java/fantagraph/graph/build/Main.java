@@ -28,19 +28,19 @@ public class Main {
         fantaGraphPopulate.populateGraph(g);
 
         //test if everything is ok
-        Object vertex = g.V().has("id giocatore", 2002).out("gioca per").in("possiede")
-                .in("è incaricato da").out("allena").out("gioca in").values("nome").next();
+        Object vertex = g.V().has("player id", 2002).out("plays for").in("owns")
+                .in("is commissioned by").out("trains").out("plays in").values("name").next();
 
-        List<Map<Object, Object>> player_stats  =g.V().has("id giocatore", 2002).out("statistiche")
+        List<Map<Object, Object>> player_stats  =g.V().has("player id", 2002).out("stats")
                 .valueMap().toList();
 
         double queryStart = System.currentTimeMillis();
-        Object players = g.V().has("id giocatore").values("nome").toList();
+        Object players = g.V().has("player id").values("name").toList();
         double queryEnd = System.currentTimeMillis();
 
         LOGGER.info(players.toString());
         LOGGER.info(String.valueOf(queryEnd - queryStart));
-        LOGGER.info("TEST: LO STADIO DOVREBBE ESSERE ARTEMIO FRANCHI E RISULTA " + vertex);
+        LOGGER.info("TEST: LO stadium DOVREBBE ESSERE ARTEMIO FRANCHI E RISULTA " + vertex);
         LOGGER.info("STATISTICHE PLAYER 2002" + player_stats);
         System.exit(0);
     }
