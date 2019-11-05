@@ -42,6 +42,7 @@ public class Main {
         LOGGER.info(String.valueOf(queryEnd - queryStart));
         LOGGER.info("TEST: LO stadium DOVREBBE ESSERE ARTEMIO FRANCHI E RISULTA " + vertex);
         LOGGER.info("STATISTICHE PLAYER 2002" + player_stats);
+        g.tx().rollback();
         System.exit(0);
     }
 }
