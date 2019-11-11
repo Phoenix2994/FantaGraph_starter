@@ -115,6 +115,9 @@ public class FantaGraphBuild {
         PropertyKey user_id = mgmt.getPropertyKey("user id");
         indexBuilder = mgmt.buildIndex("UserById", Vertex.class).addKey(user_id);
         indexBuilder.buildCompositeIndex();
+        PropertyKey fantateam_id = mgmt.getPropertyKey("fantateam id");
+        indexBuilder = mgmt.buildIndex("FantateamById", Vertex.class).addKey(fantateam_id);
+        indexBuilder.buildCompositeIndex();
     }
 
     protected void createSchema(final JanusGraphManagement management){
