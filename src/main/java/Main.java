@@ -1,5 +1,5 @@
-package fantagraph.graph.build;
-
+import graph.schema.SchemaBuilder;
+import graph.population.PopulationBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.janusgraph.core.JanusGraph;
 import org.janusgraph.core.JanusGraphFactory;
@@ -11,21 +11,21 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FantaGraphBuild.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaBuilder.class);
     public static void main(String[] args) throws Exception {
 
-        FantaGraphBuild fantaGraphBuild = new FantaGraphBuild();
-        FantaGraphPopulate fantaGraphPopulate = new FantaGraphPopulate();
+        SchemaBuilder schemaBuilder = new SchemaBuilder();
+        PopulationBuilder populationBuilder = new PopulationBuilder();
 
         //to create every time a new graph we drop the old one
-        fantaGraphBuild.dropPreviousGraph();
+        schemaBuilder.dropPreviousGraph();
         JanusGraph graph = JanusGraphFactory.open("conf/janusgraph-cassandra-elasticsearch.properties");
         final JanusGraphManagement management = graph.openManagement();
 
-        fantaGraphBuild.createSchema(management);
+        schemaBuilder.createSchema(management);
 
         GraphTraversalSource g = graph.traversal();
-        fantaGraphPopulate.populateGraph(g);
+        populationBuilder.populateGraph(g);
 
         //test if everything is ok
         Object vertex = g.V().has("player id", 2002).out("plays for").in("owns")
